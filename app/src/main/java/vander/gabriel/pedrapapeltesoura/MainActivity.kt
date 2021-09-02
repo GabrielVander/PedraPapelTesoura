@@ -3,11 +3,16 @@ package vander.gabriel.pedrapapeltesoura
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material.TopAppBar
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import vander.gabriel.pedrapapeltesoura.ui.theme.PedraPapelTesouraTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,23 +21,47 @@ class MainActivity : ComponentActivity() {
         setContent {
             PedraPapelTesouraTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                }
+                MyApp()
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
+    @Composable
+    private fun MyApp() {
+        var inGame by remember { mutableStateOf(false) }
+        var numberOfPlayers by remember { mutableStateOf(2) }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PedraPapelTesouraTheme {
-        Greeting("Android")
+        Scaffold(topBar = {
+            TopAppBar(
+                title = { Text("Rock Paper Scissors") },
+            )
+        }) {
+            if (!inGame) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(text = "How many players?", fontSize = 25.sp)
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = {
+                            inGame = true
+                        }) {
+                            Text(text = "2 Players")
+                        }
+                        Button(onClick = {
+                            numberOfPlayers = 3
+                            inGame = true
+                        }) {
+                            Text(text = "3 Players")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
