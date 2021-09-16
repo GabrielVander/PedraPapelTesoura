@@ -1,4 +1,4 @@
-package vander.gabriel.pedrapapeltesoura.ui.theme
+package vander.gabriel.pedrapapeltesoura.presentation.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes
