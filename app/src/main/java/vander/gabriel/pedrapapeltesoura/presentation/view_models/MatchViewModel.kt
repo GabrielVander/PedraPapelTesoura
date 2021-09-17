@@ -38,7 +38,7 @@ class MatchViewModel : ViewModel() {
         this.numberOfRounds = numberOfRounds
         this.numberOfPlayers = numberOfPlayers
         setupAiPlayers()
-        _matchStatus.postValue(MatchStatus.ONGOING)
+        _matchStatus.value = MatchStatus.ONGOING
     }
 
     fun onHumanPlayerHandSelection(hand: Hand) {
@@ -49,9 +49,14 @@ class MatchViewModel : ViewModel() {
         _currentRound.postValue(currentRoundModel)
     }
 
+    fun onNextRound() {
+        currentRoundModel = Round(index = currentRoundModel.index + 1)
+        _currentRound.postValue(currentRoundModel)
+    }
+
     fun onFinishMatch() {
         if (currentRoundModel.index == this.numberOfRounds) {
-            _matchStatus.postValue(MatchStatus.FINISHED)
+            _matchStatus.value = MatchStatus.FINISHED
         }
     }
 
@@ -78,19 +83,14 @@ class MatchViewModel : ViewModel() {
         val noClearWinner = playersWinStreak.all { pair -> pair.second <= winStreakThreshold }
         val winner = playersWinStreak.maxByOrNull { it.second }
 
-        when {
-            wasAnOverallDraw -> {
-                return MatchResult(
-                    result = GameResult.DRAW
-                )
-            }
-            noClearWinner -> {
-                return MatchResult(
+        return when {
+            wasAnOverallDraw || noClearWinner -> {
+                MatchResult(
                     result = GameResult.DRAW
                 )
             }
             else -> {
-                return MatchResult(
+                MatchResult(
                     result = GameResult.WINNER,
                     winner = winner!!.first
                 )
@@ -115,7 +115,7 @@ class MatchViewModel : ViewModel() {
     private fun finishRound(round: Round) {
         round.hasFinished = true
         finishedRoundsModel[round] = round.getRoundResult()
-        _finishedRounds.postValue(finishedRoundsModel)
+        _finishedRounds.value = finishedRoundsModel
     }
 
     private fun resetRounds() {
@@ -125,12 +125,12 @@ class MatchViewModel : ViewModel() {
 
     private fun resetCurrentRound() {
         currentRoundModel = Round(index = 1)
-        _currentRound.postValue(Round(index = 1))
+        _currentRound.value = Round(index = 1)
     }
 
     private fun resetFinishedRounds() {
         finishedRoundsModel = LinkedHashMap()
-        _finishedRounds.postValue(finishedRoundsModel)
+        _finishedRounds.value = finishedRoundsModel
     }
 
     private fun resetPlayers() {

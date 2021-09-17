@@ -14,4 +14,11 @@ class ConfigurationViewModel : ViewModel() {
     val numberOfRounds: LiveData<Int>
         get() = _numberOfRounds
 
+    fun onNumberOfPlayersSelected(numberOfPlayers: Int) {
+        _numberOfPlayers.postValue(numberOfPlayers)
+    }
+
+    fun onNumberOfRoundsSelected(numberOfRounds: Int) {
+        _numberOfRounds.postValue(numberOfRounds)
+    }
 }

@@ -6,15 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import vander.gabriel.pedrapapeltesoura.R
 import vander.gabriel.pedrapapeltesoura.models.MatchResult
 import vander.gabriel.pedrapapeltesoura.models.Player
@@ -23,21 +20,22 @@ import vander.gabriel.pedrapapeltesoura.models.RoundResult
 import vander.gabriel.pedrapapeltesoura.models.enums.GameResult
 import vander.gabriel.pedrapapeltesoura.models.enums.Hand
 import vander.gabriel.pedrapapeltesoura.models.enums.MatchStatus
-import vander.gabriel.pedrapapeltesoura.presentation.view_models.ConfigurationViewModel
 import vander.gabriel.pedrapapeltesoura.presentation.view_models.FinishedRounds
-import vander.gabriel.pedrapapeltesoura.presentation.view_models.MatchViewModel
 
 @Composable
 fun MatchScreen(
-    matchViewModel: MatchViewModel = viewModel(),
-    configurationViewModel: ConfigurationViewModel = viewModel()
+    matchStatus: MatchStatus,
+    currentRound: Round,
+    finishedRounds: FinishedRounds,
+    numberOfPlayers: Int,
+    numberOfRounds: Int,
+    getMatchResult: () -> MatchResult,
+    onMatchStart: (Int, Int) -> Unit,
+    onMatchFinish: () -> Unit = {},
+    onHumanHandSelection: (Hand) -> Unit = {},
+    onNextRound: () -> Unit = {},
+    onRematch: () -> Unit = {}
 ) {
-    val matchStatus by matchViewModel.matchStatus.observeAsState(MatchStatus.NOT_STARTED)
-    val currentRound by matchViewModel.currentRound.observeAsState(Round(index = 1))
-    val finishedRounds by matchViewModel.finishedRounds.observeAsState(LinkedHashMap())
-    val numberOfPlayers by configurationViewModel.numberOfPlayers.observeAsState(2)
-    val numberOfRounds by configurationViewModel.numberOfRounds.observeAsState(1)
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround,
@@ -45,31 +43,25 @@ fun MatchScreen(
     ) {
         when (matchStatus) {
             MatchStatus.NOT_STARTED -> {
-                StartMatch(onStartMatch = {
-                    matchViewModel.onStartMatch(
-                        numberOfPlayers = numberOfPlayers,
-                        numberOfRounds = numberOfRounds
-                    )
-                })
+                StartMatch(onStartMatch = { onMatchStart(numberOfPlayers, numberOfRounds) })
             }
             MatchStatus.ONGOING -> {
                 RoundHandsDisplay(round = currentRound)
                 Spacer(modifier = Modifier.size(10.dp))
-                if (currentRound.hasFinished && currentRound.index < numberOfRounds) NextRoundButton()
-                else if (!currentRound.hasFinished) HumanPlayerHandSelection(onHandSelected = {
-                    matchViewModel.onHumanPlayerHandSelection(
-                        it
-                    )
-                })
-                else Button(onClick = { matchViewModel.onFinishMatch() }) {
+                if (currentRound.hasFinished && currentRound.index < numberOfRounds) NextRoundButton(
+                    onNextRound
+                )
+                else if (!currentRound.hasFinished) HumanPlayerHandSelection(onHandSelected = onHumanHandSelection)
+                else Button(onClick = onMatchFinish) {
                     Text(text = "Finish match")
                 }
             }
             MatchStatus.FINISHED -> {
                 MatchResultDisplay(
                     finishedRounds,
-                    matchViewModel.getMatchResult(),
-                    onRematch = { matchViewModel.onRematch() })
+                    getMatchResult(),
+                    onRematch = onRematch
+                )
             }
         }
     }
@@ -95,8 +87,8 @@ private fun RoundHandsDisplay(
 }
 
 @Composable
-private fun NextRoundButton() {
-    Button(onClick = { /*TODO*/ }) {
+private fun NextRoundButton(onNextRound: () -> Unit = {}) {
+    Button(onClick = onNextRound) {
         Text(text = "Next round ->")
     }
 }
